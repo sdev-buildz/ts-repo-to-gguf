@@ -17,4 +17,14 @@ export const config = {
     import.meta.dirname,
     '../generated/insepctable_variable.json'
   ),
+  /** Absolute path to the variable dataset */
+  testcaseDataset: path.resolve(
+    import.meta.dirname,
+    '../generated/testcase_output.jsonl'
+  ),
+  /** Absolute path to the inspectable variable dataset */
+  inspectableTestcase: path.resolve(
+    import.meta.dirname,
+    '../generated/insepctable_testcase.json'
+  ),
 }

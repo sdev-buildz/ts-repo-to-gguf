@@ -11,13 +11,7 @@ import {
 } from 'ts-morph'
 import { getTypeDoc } from '../src/utils'
 import { config } from './config'
-
-type ChatMLRecord = {
-  messages: {
-    role: 'system' | 'user' | 'assistant'
-    content: string
-  }[]
-}
+import { parseTestData, type ChatMLRecord } from './parseTestData'
 
 function generateChatMLDataset() {
   const project = new Project({
@@ -132,6 +126,8 @@ function generateChatMLDataset() {
       }
     }
   }
+
+  dataset.push(...parseTestData(repoPath, project))
 
   // Write as JSONL
   const jsonlContent = dataset.map((item) => JSON.stringify(item)).join('\n')
