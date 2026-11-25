@@ -127,22 +127,51 @@ function generateChatMLDataset() {
     }
   }
 
-  dataset.push(...parseTestData(repoPath, project))
+  emitOutput(dataset, 'variable')
 
-  // Write as JSONL
-  const jsonlContent = dataset.map((item) => JSON.stringify(item)).join('\n')
+  console.log(
+    `Generated ${dataset.length} training examples in ${getOutputPath('variable')}`
+  )
+  const testcaseDataset = parseTestData(repoPath, project)
 
-  for (const outputPath of [config.varDataset, config.inspectableVar]) {
+  dataset.push(...testcaseDataset)
+
+  for (const outputPath of datasetTypes.map((name) => getOutputPath(name))) {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
     if (!fs.existsSync(outputPath)) {
       fs.writeFileSync(outputPath, '', 'utf-8')
     }
   }
 
-  fs.writeFileSync(config.varDataset, jsonlContent, 'utf-8')
-  fs.writeFileSync(config.inspectableVar, JSON.stringify(dataset), 'utf-8')
+  emitOutput(testcaseDataset, 'testcase')
+  emitOutput(dataset, 'total')
+
   console.log(
-    `Generated ${dataset.length} training examples in ${config.varDataset}`
+    `Generated ${testcaseDataset.length} training examples in ${getOutputPath('testcase')}`
+  )
+  console.log(
+    `Generated ${dataset.length} training examples in ${getOutputPath('total')}`
+  )
+}
+
+const emitOutput = (dataset: ChatMLRecord[], datasetType: DatasetType) => {
+  const jsonlContent = dataset.map((item) => JSON.stringify(item)).join('\n')
+
+  fs.writeFileSync(getOutputPath(datasetType), jsonlContent, 'utf-8')
+  fs.writeFileSync(
+    getOutputPath(datasetType, true),
+    JSON.stringify(dataset),
+    'utf-8'
+  )
+}
+
+const datasetTypes = ['testcase', 'variable', 'total']
+type DatasetType = (typeof datasetTypes)[number]
+
+const getOutputPath = (datasetType: DatasetType, inspectable = false) => {
+  return path.resolve(
+    import.meta.dirname,
+    `${config.outputFolder}/${datasetType}_${inspectable ? 'inspectable_' : ''}output.jsonl`
   )
 }
 
