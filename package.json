@@ -1,0 +1,28 @@
+{
+  "name": "fine-tuner",
+  "version": "0.0.0",
+  "description": "",
+  "private": "true",
+  "scripts": {
+    "generateDataset": "tsx --env-file-if-exists=.env ./src/generateChatMLData.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.20.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "ts-morph": "^28.0.0",
+    "tsx": "catalog:",
+    "@typescript/native": "catalog:",
+    "typescript": "catalog:"
+  }
+}

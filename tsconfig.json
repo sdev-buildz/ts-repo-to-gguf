@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2025"],
+    "module": "preserve",
+    "target": "ES2025",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noEmit": true, //  Important. Set it to true.
+    "outDir": "./generated/tsc-root",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "noImplicitOverride": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["**/dist*", "./**/*.test.ts"]
+}
