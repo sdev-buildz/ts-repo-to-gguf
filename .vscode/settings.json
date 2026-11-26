@@ -10,5 +10,8 @@
     "source.sortImports": "always",
     "source.fixAll.eslint": "always"
   },
+  "files.associations": {
+    "*.json5": "jsonc"
+  },
   "js/ts.preferences.importModuleSpecifier": "shortest"
 }

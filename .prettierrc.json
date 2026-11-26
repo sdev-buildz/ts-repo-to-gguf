@@ -5,5 +5,15 @@
   "trailingComma": "es5",
   "printWidth": 80,
   "endOfLine": "auto",
-  "jsxSingleQuote": true
+  "jsxSingleQuote": true,
+  "overrides": [
+    {
+      "files": "*.json5",
+      "options": {
+        "quoteProps": "preserve",
+        "singleQuote": false,
+        "trailingComma": "none"
+      }
+    }
+  ]
 }
