@@ -1,6 +1,6 @@
 # 🤖 Fine-tuner
 
-Fine-tuner builds a repository-specific ChatML dataset and converts a PEFT/LoRA adapter into GGUF format for use with llama.cpp.
+Fine-tuner builds a repository-specific ChatML dataset, fine-tunes a model with PEFT/LoRA, and converts the resulting adapter to GGUF for llama.cpp.
 
 It is designed for TypeScript repositories and combines three sources of training data:
 
