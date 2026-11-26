@@ -5,6 +5,7 @@
   "private": "true",
   "scripts": {
     "generateDataset": "tsx --env-file-if-exists=.env ./src/generateChatMLData.ts",
+    "convert-to-gguf": "tsx --env-file-if-exists=.env ./src/convertToGguf.ts",
     "check:lite": "pnpm run type-check && pnpm run prettier",
     "prettier": "prettier --check .",
     "prettier:write": "prettier --write .",

@@ -9,9 +9,9 @@ import {
   type InterfaceDeclaration,
   type TypeAliasDeclaration,
 } from 'ts-morph'
-import { getTypeDoc } from '../src/utils'
 import { config } from './config'
 import { parseTestData, type ChatMLRecord } from './parseTestData'
+import { getTypeDoc } from './utils/utils'
 
 function generateChatMLDataset() {
   const project = new Project({
