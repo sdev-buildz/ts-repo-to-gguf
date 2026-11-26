@@ -3,7 +3,7 @@ import { config } from './config'
 import type { ChatMLRecord } from './parseTestData'
 
 /** Maximum number of changed lines allowed in a commit diff. */
-const maxChangedLines = 28
+const maxChangedLines = 100
 
 /** Number of unchanged lines shown around each changed hunk. */
 const diffContextLines = 5
@@ -66,7 +66,7 @@ export async function parseGitCommits(): Promise<ChatMLRecord[]> {
         {
           role: 'system',
           content:
-            "You are an expert developer trained on this repository. Implement the requested change using the repository's conventions.",
+            "You are an expert TypeScript developer trained on this specific repository. Implement the requested change using the repository's conventions.",
         },
         {
           role: 'user',
