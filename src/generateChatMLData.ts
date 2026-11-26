@@ -11,9 +11,10 @@ import {
 } from 'ts-morph'
 import { config } from './config'
 import { parseTestData, type ChatMLRecord } from './parseTestData'
+import { parseGitCommits } from './parseGitCommits'
 import { getTypeDoc } from './utils/utils'
 
-function generateChatMLDataset() {
+async function generateChatMLDataset() {
   const project = new Project({
     // Load the repo's tsconfig if available, otherwise scan files manually
     skipAddingFilesFromTsConfig: true,
@@ -133,8 +134,10 @@ function generateChatMLDataset() {
     `Generated ${dataset.length} training examples in ${getOutputPath('variable')}`
   )
   const testcaseDataset = parseTestData(repoPath, project)
+  const gitCommitDataset = await parseGitCommits()
 
   dataset.push(...testcaseDataset)
+  dataset.push(...gitCommitDataset)
 
   for (const outputPath of datasetTypes.map((name) => getOutputPath(name))) {
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
@@ -144,10 +147,14 @@ function generateChatMLDataset() {
   }
 
   emitOutput(testcaseDataset, 'testcase')
+  emitOutput(gitCommitDataset, 'git-commits')
   emitOutput(dataset, 'total')
 
   console.log(
     `Generated ${testcaseDataset.length} training examples in ${getOutputPath('testcase')}`
+  )
+  console.log(
+    `Generated ${gitCommitDataset.length} training examples in ${getOutputPath('git-commits')}`
   )
   console.log(
     `Generated ${dataset.length} training examples in ${getOutputPath('total')}`
@@ -165,7 +172,7 @@ const emitOutput = (dataset: ChatMLRecord[], datasetType: DatasetType) => {
   )
 }
 
-const datasetTypes = ['testcase', 'variable', 'total']
+const datasetTypes = ['git-commits', 'testcase', 'variable', 'total']
 type DatasetType = (typeof datasetTypes)[number]
 
 const getOutputPath = (datasetType: DatasetType, inspectable = false) => {
@@ -205,4 +212,4 @@ function createSftExample(
   }
 }
 
-generateChatMLDataset()
+await generateChatMLDataset()
