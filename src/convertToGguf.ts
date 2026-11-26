@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import * as fs from 'node:fs/promises'
+import * as os from 'node:os'
 import * as path from 'node:path'
 import { config } from './config'
 import { uncompressLoraFolder } from './utils/uncompressLoraFolder'
@@ -95,6 +96,53 @@ async function requireFile(filePath: string): Promise<void> {
 }
 
 /**
+ * Checks whether a value is a non-null, non-array object.
+ *
+ * @param value - Value to check.
+ * @returns Whether the value is a record.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Writes a local base config for llama.cpp, excluding bitsandbytes metadata
+ * that describes the training-time weight quantization, not the LoRA adapter.
+ *
+ * @param baseModelId - Hugging Face model ID or local model path.
+ * @returns Path to the temporary directory containing the base config.
+ * @throws If the base config cannot be loaded or written.
+ */
+async function prepareBaseConfig(baseModelId: string): Promise<string> {
+  const configFolder = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'llama-base-config-')
+  )
+  const script = [
+    'import json, pathlib, sys',
+    'from transformers import AutoConfig',
+    'hparams = AutoConfig.from_pretrained(sys.argv[1]).to_dict()',
+    'quantization_config = hparams.get("quantization_config")',
+    'if isinstance(quantization_config, dict) and quantization_config.get("quant_method") == "bitsandbytes":',
+    '    hparams.pop("quantization_config")',
+    'with open(pathlib.Path(sys.argv[2]) / "config.json", "w", encoding="utf-8") as config_file:',
+    '    json.dump(hparams, config_file)',
+  ].join('\n')
+
+  try {
+    await run(process.env.PYTHON ?? 'python', [
+      '-c',
+      script,
+      baseModelId,
+      configFolder,
+    ])
+    return configFolder
+  } catch (error) {
+    await fs.rm(configFolder, { recursive: true, force: true })
+    throw error
+  }
+}
+
+/**
  * Converts the configured PEFT LoRA safetensors adapter to a GGUF adapter.
  *
  * @throws If adapter files, llama.cpp, Python, or the converter are unavailable.
@@ -110,19 +158,39 @@ async function convertAdapter(): Promise<void> {
     await requireFile(adapterConfig)
     await requireFile(adapterWeights)
 
+    const adapterSettings: unknown = JSON.parse(
+      await fs.readFile(adapterConfig, 'utf8')
+    )
+    if (!isRecord(adapterSettings)) {
+      throw new Error(`Invalid LoRA adapter config at ${adapterConfig}`)
+    }
+    const baseModelId = adapterSettings.base_model_name_or_path
+    if (typeof baseModelId !== 'string' || baseModelId.length === 0) {
+      throw new Error(
+        `LoRA adapter config at ${adapterConfig} must specify base_model_name_or_path`
+      )
+    }
+
     const converter = await ensureLlamaCpp()
     await fs.mkdir(config.loraGgufPath, { recursive: true })
 
     const outputPath = path.join(config.loraGgufPath, 'adapter.gguf')
-    await run(process.env.PYTHON ?? 'python', [
-      converter,
-      '--outfile',
-      outputPath,
-      '--outtype',
-      'f16',
-      adapterFolder.path,
-    ])
-    console.log(`Converted LoRA adapter to ${outputPath}`)
+    const baseConfigFolder = await prepareBaseConfig(baseModelId)
+    try {
+      await run(process.env.PYTHON ?? 'python', [
+        converter,
+        '--base',
+        baseConfigFolder,
+        '--outfile',
+        outputPath,
+        '--outtype',
+        'f16',
+        adapterFolder.path,
+      ])
+      console.log(`Converted LoRA adapter to ${outputPath}`)
+    } finally {
+      await fs.rm(baseConfigFolder, { recursive: true, force: true })
+    }
   } finally {
     await adapterFolder.cleanup?.()
   }
