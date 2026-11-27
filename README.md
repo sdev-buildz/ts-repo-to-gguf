@@ -40,16 +40,17 @@ The repository includes a Colab notebook for supervised fine-tuning a Qwen 2.5 1
 
 ```powershell
 pnpm install
-Copy-Item .env.example .env
+Copy-Item packages/core/.env.example packages/core/.env
 ```
 
-Edit `.env` and set the paths for your local environment:
+Edit `packages/core/.env` and set the paths for your local environment:
 
 ```dotenv
-REPO_PATH=../target-repo
-LLAMA_CPP_PATH=../llama-cpp
-LORA_SAFE_TENSORS_PATH=generated/qwen_1.5b_lora
-LORA_GGUF_PATH=generated/lora-gguf
+REPO_PATH=../../target-repo
+OUTPUT_PATH=../../generated
+LLAMA_CPP_PATH=../../llama-cpp
+LORA_SAFE_TENSORS_PATH=../../generated/qwen_1.5b_lora
+LORA_GGUF_PATH=../../generated/lora-gguf
 HF_TOKEN=your-hugging-face-read-token
 ```
 
@@ -65,13 +66,13 @@ pnpm run generate-dataset
 
 The generator creates JSONL and inspectable JSON files in `generated/`:
 
-| File                                 | Contents                                          |
-| ------------------------------------ | ------------------------------------------------- |
-| `generated/variable_output.jsonl`    | Named TypeScript symbol implementations           |
-| `generated/testcase_output.jsonl`    | Vitest and Playwright test implementations        |
-| `generated/git-commits_output.jsonl` | Eligible commit diffs paired with commit messages |
-| `generated/total_output.jsonl`       | Combined training dataset                         |
-| `*_inspectable_output.jsonl`         | Pretty JSON representation of the same datasets   |
+| File (relative to ./packages/core)            | Contents                                          |
+| --------------------------------------------- | ------------------------------------------------- |
+| `generated/datasets/variable_output.jsonl`    | Named TypeScript symbol implementations           |
+| `generated/datasets/testcase_output.jsonl`    | Vitest and Playwright test implementations        |
+| `generated/datasets/git-commits_output.jsonl` | Eligible commit diffs paired with commit messages |
+| `generated/datasets/total_output.jsonl`       | Combined training dataset                         |
+| `*_inspectable_output.jsonl`                  | Pretty JSON representation of the same datasets   |
 
 For Colab training, upload `generated/total_output.jsonl`.
 
@@ -127,7 +128,7 @@ generated/qwen_1.5b_lora.zip
 
 The ZIP may contain the adapter at any nesting level.
 
-Set `LORA_SAFE_TENSORS_PATH` and `LORA_GGUF_PATH` in `.env`, then run:
+Set `LORA_SAFE_TENSORS_PATH` and `LORA_GGUF_PATH` in `packages/core/.env`, then run:
 
 ```powershell
 pnpm run convert-to-gguf
