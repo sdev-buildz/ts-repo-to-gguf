@@ -1,5 +1,5 @@
 import { simpleGit } from 'simple-git'
-import { config } from './config'
+import { config } from '../config'
 import type { ChatMLRecord } from './parseTestData'
 
 /** Maximum number of changed lines allowed in a commit diff. */

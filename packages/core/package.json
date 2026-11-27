@@ -3,8 +3,14 @@
   "version": "0.0.0",
   "description": "",
   "private": "true",
+  "exports": {
+    "./dataset-generator": {
+      "types": "./src/dataset-generator/index.ts",
+      "import": "./src/dataset-generator/index.ts"
+    }
+  },
   "scripts": {
-    "generate-dataset": "tsx --env-file-if-exists=.env ./src/generateChatMLData.ts",
+    "generate-dataset": "tsx --env-file-if-exists=.env ./src/dataset-generator/createAndEmit.ts",
     "convert-to-gguf": "tsx --env-file-if-exists=.env ./src/convertToGguf.ts"
   },
   "keywords": [],

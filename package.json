@@ -6,7 +6,8 @@
   "scripts": {
     "generate-dataset": "pnpm --filter=fine-tuner-core run generate-dataset",
     "convert-to-gguf": "pnpm --filter=fine-tuner-core run convert-to-gguf",
-    "check:lite": "pnpm run type-check && pnpm run prettier",
+    "check:lite": "pnpm run type-check && pnpm run prettier && pnpm run jscpd",
+    "jscpd": "jscpd .",
     "prettier": "prettier --check .",
     "prettier:write": "prettier --write .",
     "type-check": "tsc --build",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
+    "jscpd": "^5.4.3",
     "prettier": "^3.10.1",
     "tsx": "catalog:",
     "typescript": "catalog:"

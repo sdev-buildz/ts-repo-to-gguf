@@ -1,49 +1,18 @@
-import * as fs from 'fs'
 import * as path from 'path'
 import {
+  Node,
   Project,
   SyntaxKind,
   type CallExpression,
-  Node,
   type SourceFile,
 } from 'ts-morph'
+import { findFiles } from '../utils/utils'
 
 export type ChatMLRecord = {
   messages: {
     role: 'system' | 'user' | 'assistant'
     content: string
   }[]
-}
-
-const excludedDirectories = new Set([
-  'node_modules',
-  'generated',
-  'dist',
-  'dist-tsc',
-])
-
-const findTestFiles = (repoPath: string): string[] => {
-  const files: string[] = []
-  const directories = [repoPath]
-
-  while (directories.length > 0) {
-    const directory = directories.pop()
-    if (!directory) continue
-
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const entryPath = path.join(directory, entry.name)
-      if (entry.isDirectory()) {
-        if (!excludedDirectories.has(entry.name)) directories.push(entryPath)
-      } else if (
-        entry.isFile() &&
-        /\.(test|spec)\.(ts|tsx|js|jsx)$/.test(entry.name)
-      ) {
-        files.push(entryPath)
-      }
-    }
-  }
-
-  return files.sort()
 }
 
 const getStaticName = (call: CallExpression): string | undefined => {
@@ -161,7 +130,9 @@ export function parseTestData(
         : process.cwd()
   }
 
-  for (const testFilePath of findTestFiles(repoPath)) {
+  for (const testFilePath of findFiles(repoPath, (fileName) =>
+    /\.(test|spec)\.(ts|tsx|js|jsx)$/.test(fileName)
+  )) {
     if (!project.getSourceFile(testFilePath)) {
       project.addSourceFileAtPath(testFilePath)
     }

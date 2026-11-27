@@ -1,4 +1,3 @@
-import * as fs from 'fs'
 import * as path from 'path'
 import {
   Project,
@@ -9,55 +8,28 @@ import {
   type InterfaceDeclaration,
   type TypeAliasDeclaration,
 } from 'ts-morph'
-import { config } from './config'
-import { parseGitCommits } from './parseGitCommits'
-import { parseTestData, type ChatMLRecord } from './parseTestData'
-import {
-  datasetTypes,
-  getDatasetPath,
-  getTypeDoc,
-  type DatasetType,
-} from './utils/utils'
+import { config } from '../config'
+import { findFiles, getTypeDoc } from '../utils/utils'
+import { type ChatMLRecord } from './parseTestData'
 
-async function generateChatMLDataset() {
+export const parseTsCode = async (): Promise<ChatMLRecord[]> => {
   const project = new Project({
     // Load the repo's tsconfig if available, otherwise scan files manually
     skipAddingFilesFromTsConfig: true,
   })
   const repoPath = path.resolve(config.repoPath)
-  const excludedDirectories = new Set([
-    'node_modules',
-    'generated',
-    'dist',
-    'dist-tsc',
-  ])
-  const directories = [repoPath]
-  let sourceFilePaths: string[] = []
-
-  while (directories.length > 0) {
-    const directory = directories.pop()!
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const entryPath = path.join(directory, entry.name)
-
-      if (entry.isDirectory()) {
-        if (!excludedDirectories.has(entry.name)) directories.push(entryPath)
-      } else if (
-        entry.isFile() &&
-        /\.(ts|tsx)$/.test(entry.name) &&
-        !/\.(test|spec)\.ts$/.test(entry.name)
-      ) {
-        sourceFilePaths.push(entryPath)
-      }
-    }
-  }
-
-  sourceFilePaths.sort()
+  const sourceFilePaths = findFiles(
+    repoPath,
+    (fileName) =>
+      /\.(ts|tsx)$/.test(fileName) && !/\.(test|spec)\.ts$/.test(fileName)
+  )
 
   for (const sourceFilePath of sourceFilePaths) {
     project.addSourceFileAtPath(sourceFilePath)
   }
 
-  const dataset: ChatMLRecord[] = []
+  /** Dataset generated from TS symbols including functions, classes, types, arrow functions, etc */
+  const symbolDataset: ChatMLRecord[] = []
 
   for (const sourceFile of project.getSourceFiles()) {
     const relativePath = path.relative(repoPath, sourceFile.getFilePath())
@@ -82,7 +54,9 @@ async function generateChatMLDataset() {
       const jsDocs = getTypeDoc(node)
       const code = node.getText()
 
-      dataset.push(createSftExample(relativePath, imports, name, jsDocs, code))
+      symbolDataset.push(
+        createSftExample(relativePath, imports, name, jsDocs, code)
+      )
     }
 
     // 1. Extract Functions
@@ -120,7 +94,7 @@ async function generateChatMLDataset() {
 
         const code = variableStatement.getText()
 
-        dataset.push(
+        symbolDataset.push(
           createSftExample(
             relativePath,
             imports,
@@ -133,48 +107,7 @@ async function generateChatMLDataset() {
     }
   }
 
-  for (const outputPath of datasetTypes.map((name) => getDatasetPath(name))) {
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-    if (!fs.existsSync(outputPath)) {
-      fs.writeFileSync(outputPath, '', 'utf-8')
-    }
-  }
-
-  emitOutput(dataset, 'variable')
-
-  console.log(
-    `Generated ${dataset.length} training examples in ${getDatasetPath('variable')}`
-  )
-  const testcaseDataset = parseTestData(repoPath, project)
-  const gitCommitDataset = await parseGitCommits()
-
-  dataset.push(...testcaseDataset)
-  dataset.push(...gitCommitDataset)
-
-  emitOutput(testcaseDataset, 'testcase')
-  emitOutput(gitCommitDataset, 'git-commits')
-  emitOutput(dataset, 'total')
-
-  console.log(
-    `Generated ${testcaseDataset.length} training examples in ${getDatasetPath('testcase')}`
-  )
-  console.log(
-    `Generated ${gitCommitDataset.length} training examples in ${getDatasetPath('git-commits')}`
-  )
-  console.log(
-    `Generated ${dataset.length} training examples in ${getDatasetPath('total')}`
-  )
-}
-
-const emitOutput = (dataset: ChatMLRecord[], datasetType: DatasetType) => {
-  const jsonlContent = dataset.map((item) => JSON.stringify(item)).join('\n')
-
-  fs.writeFileSync(getDatasetPath(datasetType), jsonlContent, 'utf-8')
-  fs.writeFileSync(
-    getDatasetPath(datasetType, true),
-    JSON.stringify(dataset),
-    'utf-8'
-  )
+  return symbolDataset
 }
 
 function createSftExample(
@@ -207,4 +140,4 @@ function createSftExample(
   }
 }
 
-await generateChatMLDataset()
+await parseTsCode()
