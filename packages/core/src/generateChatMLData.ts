@@ -10,9 +10,14 @@ import {
   type TypeAliasDeclaration,
 } from 'ts-morph'
 import { config } from './config'
-import { parseTestData, type ChatMLRecord } from './parseTestData'
 import { parseGitCommits } from './parseGitCommits'
-import { getTypeDoc } from './utils/utils'
+import { parseTestData, type ChatMLRecord } from './parseTestData'
+import {
+  datasetTypes,
+  getDatasetPath,
+  getTypeDoc,
+  type DatasetType,
+} from './utils/utils'
 
 async function generateChatMLDataset() {
   const project = new Project({
@@ -128,10 +133,17 @@ async function generateChatMLDataset() {
     }
   }
 
+  for (const outputPath of datasetTypes.map((name) => getDatasetPath(name))) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+    if (!fs.existsSync(outputPath)) {
+      fs.writeFileSync(outputPath, '', 'utf-8')
+    }
+  }
+
   emitOutput(dataset, 'variable')
 
   console.log(
-    `Generated ${dataset.length} training examples in ${getOutputPath('variable')}`
+    `Generated ${dataset.length} training examples in ${getDatasetPath('variable')}`
   )
   const testcaseDataset = parseTestData(repoPath, project)
   const gitCommitDataset = await parseGitCommits()
@@ -139,46 +151,29 @@ async function generateChatMLDataset() {
   dataset.push(...testcaseDataset)
   dataset.push(...gitCommitDataset)
 
-  for (const outputPath of datasetTypes.map((name) => getOutputPath(name))) {
-    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-    if (!fs.existsSync(outputPath)) {
-      fs.writeFileSync(outputPath, '', 'utf-8')
-    }
-  }
-
   emitOutput(testcaseDataset, 'testcase')
   emitOutput(gitCommitDataset, 'git-commits')
   emitOutput(dataset, 'total')
 
   console.log(
-    `Generated ${testcaseDataset.length} training examples in ${getOutputPath('testcase')}`
+    `Generated ${testcaseDataset.length} training examples in ${getDatasetPath('testcase')}`
   )
   console.log(
-    `Generated ${gitCommitDataset.length} training examples in ${getOutputPath('git-commits')}`
+    `Generated ${gitCommitDataset.length} training examples in ${getDatasetPath('git-commits')}`
   )
   console.log(
-    `Generated ${dataset.length} training examples in ${getOutputPath('total')}`
+    `Generated ${dataset.length} training examples in ${getDatasetPath('total')}`
   )
 }
 
 const emitOutput = (dataset: ChatMLRecord[], datasetType: DatasetType) => {
   const jsonlContent = dataset.map((item) => JSON.stringify(item)).join('\n')
 
-  fs.writeFileSync(getOutputPath(datasetType), jsonlContent, 'utf-8')
+  fs.writeFileSync(getDatasetPath(datasetType), jsonlContent, 'utf-8')
   fs.writeFileSync(
-    getOutputPath(datasetType, true),
+    getDatasetPath(datasetType, true),
     JSON.stringify(dataset),
     'utf-8'
-  )
-}
-
-const datasetTypes = ['git-commits', 'testcase', 'variable', 'total']
-type DatasetType = (typeof datasetTypes)[number]
-
-const getOutputPath = (datasetType: DatasetType, inspectable = false) => {
-  return path.resolve(
-    import.meta.dirname,
-    `${config.outputFolder}/${datasetType}_${inspectable ? 'inspectable_' : ''}output.jsonl`
   )
 }
 

@@ -60,7 +60,7 @@ Paths are resolved from the fine-tuner project directory. `HF_TOKEN` is passed t
 Set `REPO_PATH` in `.env`, then run:
 
 ```powershell
-pnpm run generateDataset
+pnpm run generate-dataset
 ```
 
 The generator creates JSONL and inspectable JSON files in `generated/`:

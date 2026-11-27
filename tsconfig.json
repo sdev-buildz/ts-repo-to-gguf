@@ -22,5 +22,6 @@
     "noImplicitOverride": true,
     "skipLibCheck": true
   },
+  "references": [{ "path": "./packages/core" }],
   "exclude": ["**/dist*", "**/generated*", "./**/*.test.ts"]
 }

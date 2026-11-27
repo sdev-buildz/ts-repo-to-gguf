@@ -1,11 +1,11 @@
 {
   "name": "fine-tuner",
   "version": "0.0.0",
-  "description": "",
+  "description": "The fine-tuner monorepo",
   "private": "true",
   "scripts": {
-    "generateDataset": "tsx --env-file-if-exists=.env ./src/generateChatMLData.ts",
-    "convert-to-gguf": "tsx --env-file-if-exists=.env ./src/convertToGguf.ts",
+    "generate-dataset": "pnpm --filter=fine-tuner-core run generate-dataset",
+    "convert-to-gguf": "pnpm --filter=fine-tuner-core run convert-to-gguf",
     "check:lite": "pnpm run type-check && pnpm run prettier",
     "prettier": "prettier --check .",
     "prettier:write": "prettier --write .",
@@ -13,7 +13,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "https://github.com/sdev-buildz",
   "license": "ISC",
   "devEngines": {
     "packageManager": {
@@ -23,10 +23,6 @@
     }
   },
   "type": "module",
-  "dependencies": {
-    "simple-git": "^4.1.0",
-    "ts-morph": "^28.0.0"
-  },
   "devDependencies": {
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",

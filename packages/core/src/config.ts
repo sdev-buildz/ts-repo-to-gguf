@@ -7,7 +7,10 @@ export const config = {
   ),
 
   /** The folder to contain all the generated outputs */
-  outputFolder: '../generated',
+  outputFolder: path.resolve(
+    process.cwd(),
+    process.env.OUTPUT_PATH ?? './generated/datasets'
+  ),
 
   /** Path to the llama.cpp repository or installation directory */
   llamaCppPath: path.resolve(

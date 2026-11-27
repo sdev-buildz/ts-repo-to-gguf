@@ -261,6 +261,24 @@ catalogs:
 
 importers:
   .:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      prettier:
+        specifier: ^3.10.1
+        version: 3.10.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.15
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  packages/core:
     dependencies:
       simple-git:
         specifier: ^4.1.0
@@ -275,9 +293,6 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
-      prettier:
-        specifier: ^3.10.1
-        version: 3.10.1
       tsx:
         specifier: 'catalog:'
         version: 4.23.15

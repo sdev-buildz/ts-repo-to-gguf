@@ -1,0 +1,31 @@
+{
+  "name": "fine-tuner-core",
+  "version": "0.0.0",
+  "description": "",
+  "private": "true",
+  "scripts": {
+    "generate-dataset": "tsx --env-file-if-exists=.env ./src/generateChatMLData.ts",
+    "convert-to-gguf": "tsx --env-file-if-exists=.env ./src/convertToGguf.ts"
+  },
+  "keywords": [],
+  "author": "https://github.com/sdev-buildz",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.20.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "simple-git": "^4.1.0",
+    "ts-morph": "^28.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}
